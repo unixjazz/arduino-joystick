@@ -1,28 +1,15 @@
-Arduino Leonardo USB Digital Joystick
-=====================================
+#Ground Control Arcade Box -- USB Controller
 
-This code runs on an Arduino Leonardo allowing it to act as a USB 
-digital joystick
+This code allows for the usage of an Arduino Leonardo as a USB joystick.
+It was contributed by Kevin Peat and modified for the Ground Control arcade project.
 
-Uses modified HID.cpp and USBAPI.h provided by "That Guy" at 
-http://www.imaginaryindustries.com/blog/?p=80
-(see instructions there for installation and use)
+In order to use this code, you have to install modified version of the USBAPI.h and HID.cpp files. [Follow this link for instructions](http://www.imaginaryindustries.com/blog/?p=80).
 
-Developed for use with an Arduino Leonardo as it is able to act directly 
-as a USB HID controller so doesn't require the Arduino firmware to 
-be modified as some of the other Arduinos (eg. Uno) would do.
+For instructions on how to wire the Ground Control joystick, [follow this wiki page](http://www.samuraicircuits.com/MediaWiki/index.php?title=Ground_Control_Arcade_Box). 
 
-Connections as follows:
+This code has been tested on Arduino Leonardo and the PRO Micro boards.
 
-Arduino Pin					Function
------------					----------------------------
-6								Button 1
-7								Button 2
-8								Joystick Left
-9								Joystick Up
-10								Joystick Right
-11								Joystick Down
-GND							Button 1/2 and Joystick GND
+##TODO
 
-Copyright Kevin Peat 2013
-kevin 'at' kevinpeat.com
+- Fix HID descriptor for the arcade controller;
+- Speed hacks: responsivity is already really good, but it can be improved.
