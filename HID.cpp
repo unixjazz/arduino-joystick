@@ -141,9 +141,9 @@ const u8 _hidReportDescriptor[] = {
 
 #ifdef JOYHID_ENABLED
 
-// 32 buttons (and a throttle - just in case the game doesn't recognise a joystick with no analog axis)
+//16 buttons
 
-	0x05, 0x01,			// USAGE_PAGE (Generic Desktop)
+0x05, 0x01,			// USAGE_PAGE (Generic Desktop)
 	0x09, 0x04,			// USAGE (Joystick)
 	0xa1, 0x01,			// COLLECTION (Application)
 		0x85, 0x03,			// REPORT_ID (3)  (This is important when HID_SendReport() is called)
@@ -151,71 +151,26 @@ const u8 _hidReportDescriptor[] = {
 		//Buttons:
 		0x05, 0x09,			// USAGE_PAGE (Button)
 		0x19, 0x01,			// USAGE_MINIMUM (Button 1)
-		0x29, 0x20,			// USAGE_MAXIMUM (Button 32)
+		0x29, 0x10,			// USAGE_MAXIMUM (Button 16)
 		0x15, 0x00,			// LOGICAL_MINIMUM (0)
 		0x25, 0x01,			// LOGICAL_MAXIMUM (1)
 		0x75, 0x01,			// REPORT_SIZE (1)
-		0x95, 0x20,			// REPORT_COUNT (32)
+		0x95, 0x10,			// REPORT_COUNT (16)
 		0x55, 0x00,			// UNIT_EXPONENT (0)
 		0x65, 0x00,			// UNIT (None)
 		0x81, 0x02,			// INPUT (Data,Var,Abs)
-
-		// 8 bit Throttle and Steering
 		0x05, 0x02,			// USAGE_PAGE (Simulation Controls)
-
-		0x15, 0x00,			// LOGICAL_MINIMUM (0)
-		0x26, 0xff, 0x00,		// LOGICAL_MAXIMUM (255)
-		0xA1, 0x00,			// COLLECTION (Physical)
-			0x09, 0xBB,			// USAGE (Throttle)
-			0x09, 0xBA,			// USAGE (Steering)
-			0x75, 0x08,			// REPORT_SIZE (8)
-			0x95, 0x02,			// REPORT_COUNT (2)
-			0x81, 0x02,			// INPUT (Data,Var,Abs)
-
-		0xc0,				// END_COLLECTION
-		// Two Hat switches
-
 		0x05, 0x01,			// USAGE_PAGE (Generic Desktop)
-
-		0x09, 0x39,			// USAGE (Hat switch)
-		0x15, 0x00,			// LOGICAL_MINIMUM (0)
-		0x25, 0x07,			// LOGICAL_MAXIMUM (7)
-		0x35, 0x00,			// PHYSICAL_MINIMUM (0)
-		0x46, 0x3B, 0x01,		// PHYSICAL_MAXIMUM (315)
-		0x65, 0x14,			// UNIT (Eng Rot:Angular Pos)
-		0x75, 0x04,			// REPORT_SIZE (4)
-		0x95, 0x01,			// REPORT_COUNT (1)
-		0x81, 0x02,			// INPUT (Data,Var,Abs)
-
-		0x09, 0x39,			// USAGE (Hat switch)
-		0x15, 0x00,			// LOGICAL_MINIMUM (0)
-		0x25, 0x07,			// LOGICAL_MAXIMUM (7)
-		0x35, 0x00,			// PHYSICAL_MINIMUM (0)
-		0x46, 0x3B, 0x01,		// PHYSICAL_MAXIMUM (315)
-		0x65, 0x14,			// UNIT (Eng Rot:Angular Pos)
-		0x75, 0x04,			// REPORT_SIZE (4)
-		0x95, 0x01,			// REPORT_COUNT (1)
-		0x81, 0x02,			// INPUT (Data,Var,Abs)
-
-		0x15, 0x00,			// LOGICAL_MINIMUM (0)
-		0x26, 0xff, 0x00,		// LOGICAL_MAXIMUM (255)
-		0x75, 0x08,			// REPORT_SIZE (8)
-
-		0x09, 0x01,			// USAGE (Pointer)
+		0x15, 0x81,			// LOGICAL_MINIMUM (0)
+		0x25, 0x7F,     		// LOGICAL_MAXIMUM (255)
 		0xA1, 0x00,			// COLLECTION (Physical)
-			0x09, 0x30,		// USAGE (x)
-			0x09, 0x31,		// USAGE (y)
-			0x09, 0x32,		// USAGE (z)
-			0x09, 0x33,		// USAGE (rx)
-			0x09, 0x34,		// USAGE (ry)
-			0x09, 0x35,		// USAGE (rz)
-			0x95, 0x06,		// REPORT_COUNT (2)
-			0x81, 0x02,		// INPUT (Data,Var,Abs)
+		0x09, 0xBB,			// USAGE (Throttle)
+		0x09, 0xBA,			// USAGE (Steering)
+		0x75, 0x08,			// REPORT_SIZE (8)
+		0x95, 0x02,			// REPORT_COUNT (2)
+		0x81, 0x02,			// INPUT (Data,Var,Abs)
 		0xc0,				// END_COLLECTION
-
 	0xc0					// END_COLLECTION
-
-
 
 
 #endif
@@ -306,40 +261,26 @@ Joystick_::Joystick_()
 }
 
 
-#define joyBytes 13 		// should be equivalent to sizeof(JoyState_t)
+#define joyBytes 4 		// should be equivalent to sizeof(JoyState_t)
 
 void Joystick_::setState(JoyState_t *joySt)
 {
 	uint8_t data[joyBytes];
-	uint32_t buttonTmp;
+	uint16_t buttonTmp;
 	buttonTmp = joySt->buttons;
 
-	data[0] = buttonTmp & 0xFF;		// Break 32 bit button-state out into 4 bytes, to send over USB
+	data[0] = buttonTmp & 0xFF;     // Break 16 bit button-state out into 2 bytes, to send over USB
 	buttonTmp >>= 8;
 	data[1] = buttonTmp & 0xFF;
 	buttonTmp >>= 8;
-	data[2] = buttonTmp & 0xFF;
-	buttonTmp >>= 8;
-	data[3] = buttonTmp & 0xFF;
 
-	data[4] = joySt->throttle;		// Throttle
-	data[5] = joySt->rudder;		// Steering
-
-	data[6] = (joySt->hatSw2 << 4) | joySt->hatSw1;		// Pack hat-switch states into a single byte
-
-	data[7] = joySt->xAxis;		// X axis
-	data[8] = joySt->yAxis;		// Y axis
-	data[9] = joySt->zAxis;		// Z axis
-	data[10] = joySt->xRotAxis;		// rX axis
-	data[11] = joySt->yRotAxis;		// rY axis
-	data[12] = joySt->zRotAxis;		// rZ axis
+	data[2] = joySt->xAxis;		// X axis
+	data[3] = joySt->yAxis;		// Y axis
 
 	//HID_SendReport(Report number, array of values in same order as HID descriptor, length)
 	HID_SendReport(3, data, joyBytes);
 	// The joystick is specified as using report 3 in the descriptor. That's where the "3" comes from
 }
-
-
 
 
 //================================================================================

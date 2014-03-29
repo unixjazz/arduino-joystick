@@ -1,6 +1,6 @@
 /* 
 * -------------------------------------------------------------------------
-* Digital Joystick Code for Sparkfun Pro Micro
+* Digital Joystick Code for Arduino Leonardo
 * -------------------------------------------------------------------------
 * Copyright Kevin Peat 2013
 * This code module is licensed public domain

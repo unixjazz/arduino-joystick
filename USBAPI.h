@@ -54,19 +54,8 @@ typedef struct JoyState 		// Pretty self explanitory. Simple state to store all 
 {
 	uint8_t		xAxis;
 	uint8_t		yAxis;
-	uint8_t		zAxis;
 
-	uint8_t		xRotAxis;
-	uint8_t		yRotAxis;
-	uint8_t		zRotAxis;
-
-	uint8_t		throttle;
-	uint8_t		rudder;
-
-	uint8_t		hatSw1;
-	uint8_t		hatSw2;
-
-	uint32_t	buttons;		// 32 general buttons
+	uint16_t	buttons;	// 16 general buttons
 
 } JoyState_t;
 
