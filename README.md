@@ -16,5 +16,6 @@ This code has been tested on Arduino Leonardo and PRO Micro boards.
 ##Changelog
 
 12/10/2013 - First release of Ground Control Arcade controller
+
 03/23/2014 - Fixed USB HID descriptor for the Joystick (12 buttons, 2 axes)
 
