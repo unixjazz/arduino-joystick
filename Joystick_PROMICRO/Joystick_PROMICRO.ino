@@ -1,6 +1,6 @@
 /* 
 * -------------------------------------------------------------------------
-* Digital Joystick Code for Arduino Leonardo
+* Digital Joystick Code for Sparkfun Pro Micro
 * -------------------------------------------------------------------------
 * Copyright Kevin Peat 2013
 * This code module is licensed public domain
@@ -194,7 +194,7 @@ void loop()
     button8State = false;
     joySt.buttons &= 63;
   }
- 
+  
   // Joystick pressed up
   if (digitalRead(UP_PIN) == LOW)
   {
