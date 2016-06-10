@@ -16,25 +16,18 @@
 ** SOFTWARE.
 */
 
-#include "Platform.h"
 #include "USBAPI.h"
-#include "USBDesc.h"
 
 #if defined(USBCON)
 #ifdef HID_ENABLED
 
-// *** This used to be RAWHID_ENABLED
 //#define RAWHID_ENABLED
-//#define KBAM_ENABLED
 #define JOYHID_ENABLED
-
 //	Singletons for mouse and keyboard
 
 Mouse_ Mouse;
 Keyboard_ Keyboard;
-
 // *** Add a joystick too
-
 Joystick_ Joystick;
 
 //================================================================================
@@ -45,16 +38,16 @@ Joystick_ Joystick;
 #define LSB(_x) ((_x) & 0xFF)
 #define MSB(_x) ((_x) >> 8)
 
-#define RAWHID_USAGE_PAGE	0xFFC0
-#define RAWHID_USAGE		0x0C00
-#define RAWHID_TX_SIZE 64
-#define RAWHID_RX_SIZE 64
+#define RAWHID_USAGE_PAGE 0xFFC0
+#define RAWHID_USAGE      0x0C00
+#define RAWHID_TX_SIZE    64
+#define RAWHID_RX_SIZE    64
 
 extern const u8 _hidReportDescriptor[] PROGMEM;
 const u8 _hidReportDescriptor[] = {
 
 #if KBAM_ENABLED
-	//	Mouse
+	// Mouse
 	0x05, 0x01,			// USAGE_PAGE (Generic Desktop)	// 54
 	0x09, 0x02,			// USAGE (Mouse)
 	0xa1, 0x01,			// COLLECTION (Application)
@@ -81,10 +74,10 @@ const u8 _hidReportDescriptor[] = {
 	0x75, 0x08,			//     REPORT_SIZE (8)
 	0x95, 0x03,			//     REPORT_COUNT (3)
 	0x81, 0x06,			//     INPUT (Data,Var,Rel)
-	0xc0,			      //   END_COLLECTION
-	0xc0,			      // END_COLLECTION
+	0xc0,			        //   END_COLLECTION
+	0xc0,			        // END_COLLECTION
 
-	//	Keyboard
+	// Keyboard
 	0x05, 0x01,			// USAGE_PAGE (Generic Desktop)	// 47
 	0x09, 0x06,			// USAGE (Keyboard)
 	0xa1, 0x01,			// COLLECTION (Application)
@@ -112,7 +105,7 @@ const u8 _hidReportDescriptor[] = {
 	0x19, 0x00,			//   USAGE_MINIMUM (Reserved (no event indicated))
 	0x29, 0x65,			//   USAGE_MAXIMUM (Keyboard Application)
 	0x81, 0x00,			//   INPUT (Data,Ary,Abs)
-	0xc0,			      // END_COLLECTION
+	0xc0,			        // END_COLLECTION
 #endif
 #if RAWHID_ENABLED
 	//	RAW HID
@@ -120,10 +113,10 @@ const u8 _hidReportDescriptor[] = {
 	0x0A, LSB(RAWHID_USAGE), MSB(RAWHID_USAGE),
 
 	0xA1, 0x01,				// Collection 0x01
-	0x85, 0x03,             // REPORT_ID (3)
+	0x85, 0x03,                             // REPORT_ID (3)
 	0x75, 0x08,				// report size = 8 bits
 	0x15, 0x00,				// logical minimum = 0
-	0x26, 0xFF, 0x00,		// logical maximum = 255
+	0x26, 0xFF, 0x00,		        // logical maximum = 255
 
 	0x95, 64,				// report count TX
 	0x09, 0x01,				// usage
@@ -134,6 +127,7 @@ const u8 _hidReportDescriptor[] = {
 	0x91, 0x02,				// Output (array)
 	0xC0					// end collection
 #endif
+
 // *** Here is where the RAW_HID has been converted to a Joystick device
 // *** Inspired by helmpcb.com/electronics/usb-joystick
 // *** Check out www.usb.org/developers/hidpage/ for more than you'll ever need to know about USB HID
@@ -143,9 +137,9 @@ const u8 _hidReportDescriptor[] = {
 
 //16 buttons
 
-0x05, 0x01,			// USAGE_PAGE (Generic Desktop)
-	0x09, 0x04,			// USAGE (Joystick)
-	0xa1, 0x01,			// COLLECTION (Application)
+        	0x05, 0x01,			// USAGE_PAGE (Generic Desktop)
+		0x09, 0x04,			// USAGE (Joystick)
+		0xa1, 0x01,			// COLLECTION (Application)
 		0x85, 0x03,			// REPORT_ID (3)  (This is important when HID_SendReport() is called)
 
 		//Buttons:
@@ -170,8 +164,7 @@ const u8 _hidReportDescriptor[] = {
 		0x95, 0x02,			// REPORT_COUNT (2)
 		0x81, 0x02,			// INPUT (Data,Var,Abs)
 		0xc0,				// END_COLLECTION
-	0xc0					// END_COLLECTION
-
+		0xc0					// END_COLLECTION
 
 #endif
 };
@@ -260,7 +253,6 @@ Joystick_::Joystick_()
 {
 }
 
-
 #define joyBytes 4 		// should be equivalent to sizeof(JoyState_t)
 
 void Joystick_::setState(JoyState_t *joySt)
@@ -279,7 +271,8 @@ void Joystick_::setState(JoyState_t *joySt)
 
 	//HID_SendReport(Report number, array of values in same order as HID descriptor, length)
 	HID_SendReport(3, data, joyBytes);
-	// The joystick is specified as using report 3 in the descriptor. That's where the "3" comes from
+	
+        // The joystick is specified as using report 3 in the descriptor. That's where the "3" comes from
 }
 
 
@@ -379,9 +372,9 @@ const uint8_t _asciimap[128] =
 	0x00,             // ENQ
 	0x00,             // ACK
 	0x00,             // BEL
-	0x2a,			// BS	Backspace
-	0x2b,			// TAB	Tab
-	0x28,			// LF	Enter
+	0x2a,		  // BS	Backspace
+	0x2b,		  // TAB Tab
+	0x28,		  // LF	Enter
 	0x00,             // VT
 	0x00,             // FF
 	0x00,             // CR
