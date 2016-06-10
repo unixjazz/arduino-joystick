@@ -1,8 +1,5 @@
-Arduino Leonardo USB Digital Joystick
-=====================================
-
-This sketch uses a modified HID.cpp and USBAPI.h provided by "That Guy" at 
-http://www.imaginaryindustries.com/blog/?p=80
-(see site for license details)
+Arduino Leonardo-based USB Joystick
+===================================
 
 The arduino sketch, originally written by Kevin Peake, is licensed as public domain.
+It was modified for the purposes of the Ground Control arcade project. 

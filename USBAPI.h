@@ -1,9 +1,41 @@
+/*
+  USBAPI.h
+  Copyright (c) 2005-2014 Arduino.  All right reserved.
 
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 #ifndef __USBAPI__
 #define __USBAPI__
 
+#include <inttypes.h>
+#include <avr/pgmspace.h>
+#include <avr/eeprom.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+
+typedef unsigned char u8;
+typedef unsigned short u16;
+typedef unsigned long u32;
+
+#include "Arduino.h"
+
 #if defined(USBCON)
+
+#include "USBDesc.h"
+#include "USBCore.h"
 
 //================================================================================
 //================================================================================
@@ -25,27 +57,44 @@ extern USBDevice_ USBDevice;
 //================================================================================
 //	Serial over CDC (Serial1 is the physical port)
 
+struct ring_buffer;
+
+#if (RAMEND < 1000)
+#define SERIAL_BUFFER_SIZE 16
+#else
+#define SERIAL_BUFFER_SIZE 64
+#endif
+
 class Serial_ : public Stream
 {
 private:
-	ring_buffer *_cdc_rx_buffer;
+	int peek_buffer;
 public:
-	void begin(uint16_t baud_count);
+	Serial_() { peek_buffer = -1; };
+	void begin(unsigned long);
+	void begin(unsigned long, uint8_t);
 	void end(void);
 
 	virtual int available(void);
-	virtual void accept(void);
 	virtual int peek(void);
 	virtual int read(void);
 	virtual void flush(void);
 	virtual size_t write(uint8_t);
+	virtual size_t write(const uint8_t*, size_t);
+	using Print::write; // pull in write(str) and write(buf, size) from Print
 	operator bool();
+
+	volatile uint8_t _rx_buffer_head;
+	volatile uint8_t _rx_buffer_tail;
+	unsigned char _rx_buffer[SERIAL_BUFFER_SIZE];
 };
 extern Serial_ Serial;
 
+#define HAVE_CDCSERIAL
+
 //================================================================================
 //================================================================================
-//	Joystick
+//  Joystick
 //  Implemented in HID.cpp
 //  The list of parameters here needs to match the implementation in HID.cpp
 
@@ -54,7 +103,6 @@ typedef struct JoyState 		// Pretty self explanitory. Simple state to store all 
 {
 	uint8_t		xAxis;
 	uint8_t		yAxis;
-
 	uint16_t	buttons;	// 16 general buttons
 
 } JoyState_t;
@@ -113,28 +161,28 @@ extern Mouse_ Mouse;
 #define KEY_LEFT_ARROW		0xD8
 #define KEY_RIGHT_ARROW		0xD7
 #define KEY_BACKSPACE		0xB2
-#define KEY_TAB				0xB3
-#define KEY_RETURN			0xB0
-#define KEY_ESC				0xB1
-#define KEY_INSERT			0xD1
-#define KEY_DELETE			0xD4
-#define KEY_PAGE_UP			0xD3
+#define KEY_TAB			0xB3
+#define KEY_RETURN		0xB0
+#define KEY_ESC			0xB1
+#define KEY_INSERT		0xD1
+#define KEY_DELETE		0xD4
+#define KEY_PAGE_UP		0xD3
 #define KEY_PAGE_DOWN		0xD6
-#define KEY_HOME			0xD2
-#define KEY_END				0xD5
+#define KEY_HOME		0xD2
+#define KEY_END			0xD5
 #define KEY_CAPS_LOCK		0xC1
-#define KEY_F1				0xC2
-#define KEY_F2				0xC3
-#define KEY_F3				0xC4
-#define KEY_F4				0xC5
-#define KEY_F5				0xC6
-#define KEY_F6				0xC7
-#define KEY_F7				0xC8
-#define KEY_F8				0xC9
-#define KEY_F9				0xCA
-#define KEY_F10				0xCB
-#define KEY_F11				0xCC
-#define KEY_F12				0xCD
+#define KEY_F1			0xC2
+#define KEY_F2			0xC3
+#define KEY_F3			0xC4
+#define KEY_F4			0xC5
+#define KEY_F5			0xC6
+#define KEY_F6			0xC7
+#define KEY_F7			0xC8
+#define KEY_F8			0xC9
+#define KEY_F9			0xCA
+#define KEY_F10			0xCB
+#define KEY_F11			0xCC
+#define KEY_F12			0xCD
 
 //	Low level key report: up to 6 keys and shift, ctrl etc at once
 typedef struct
@@ -178,8 +226,8 @@ typedef struct
 //================================================================================
 //	HID 'Driver'
 
-int		HID_GetInterface(uint8_t* interfaceNum);
-int		HID_GetDescriptor(int i);
+int	HID_GetInterface(uint8_t* interfaceNum);
+int	HID_GetDescriptor(int i);
 bool	HID_Setup(Setup& setup);
 void	HID_SendReport(uint8_t id, const void* data, int len);
 
@@ -187,8 +235,8 @@ void	HID_SendReport(uint8_t id, const void* data, int len);
 //================================================================================
 //	MSC 'Driver'
 
-int		MSC_GetInterface(uint8_t* interfaceNum);
-int		MSC_GetDescriptor(int i);
+int	MSC_GetInterface(uint8_t* interfaceNum);
+int	MSC_GetDescriptor(int i);
 bool	MSC_Setup(Setup& setup);
 bool	MSC_Data(uint8_t rx,uint8_t tx);
 
@@ -196,8 +244,8 @@ bool	MSC_Data(uint8_t rx,uint8_t tx);
 //================================================================================
 //	CSC 'Driver'
 
-int		CDC_GetInterface(uint8_t* interfaceNum);
-int		CDC_GetDescriptor(int i);
+int	CDC_GetInterface(uint8_t* interfaceNum);
+int	CDC_GetDescriptor(int i);
 bool	CDC_Setup(Setup& setup);
 
 //================================================================================
@@ -213,7 +261,7 @@ int USB_RecvControl(void* d, int len);
 uint8_t	USB_Available(uint8_t ep);
 int USB_Send(uint8_t ep, const void* data, int len);	// blocking
 int USB_Recv(uint8_t ep, void* data, int len);		// non-blocking
-int USB_Recv(uint8_t ep);							// non-blocking
+int USB_Recv(uint8_t ep);				// non-blocking
 void USB_Flush(uint8_t ep);
 
 #endif
